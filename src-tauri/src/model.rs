@@ -25,6 +25,12 @@ pub fn spawn_thread(model_path: PathBuf) -> thread::JoinHandle<()> {
         let backend = LlamaBackend::init().unwrap();
         let model_params = LlamaModelParams::default();
         let model = LlamaModel::load_from_file(&backend, model_path, &model_params)
-                    .expect("Failed to load the model");
+            .expect("Failed to load the model");    
+
+        //Create Context
+        let ctx_params = LlamaContextParams::default().with_n_ctx(NonZeroU32::new(512));
+        let mut ctx = model
+            .new_context(&backend, ctx_params)
+            .expect("Failed to create the context");
     })
 }
