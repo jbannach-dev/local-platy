@@ -34,8 +34,10 @@ function App() {
 
       // Add user message to the chat history
       addMessage(
-        <div className="chat-history-user">
-          <p>{prompt}</p>
+        <div className="chat-history-entry chat-history-entry-user">
+          <div className="chat-history-entry-wrapper chat-history-entry-wrapper-user">
+            <p>{prompt}</p>
+          </div>
         </div>
       );
 
@@ -44,8 +46,10 @@ function App() {
 
       // Add the response to the chat history
       addMessage(
-        <div className="chat-history-bot">
-          <p>{newMessage}</p>
+        <div className="chat-history-entry chat-history-entry-bot">
+          <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
+            <p >{newMessage}</p>
+          </div>
         </div>
       );
 
