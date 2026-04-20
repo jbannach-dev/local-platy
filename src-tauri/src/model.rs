@@ -13,10 +13,18 @@
 //    limitations under the License.
 
 use std::thread;
+use std::path::PathBuf;
+use llama_cpp_2::llama_backend::LlamaBackend;
+use llama_cpp_2::model::params::LlamaModelParams;
+use llama_cpp_2::model::LlamaModel;
 
 // Public wrapper that spawns the thread and returns the handle
-pub fn spawn_thread() -> thread::JoinHandle<()> {
+pub fn spawn_thread(model_path: PathBuf) -> thread::JoinHandle<()> {
     thread::spawn(move || {
-        println!("model thread spawned");
+        //Load Model
+        let backend = LlamaBackend::init().unwrap();
+        let model_params = LlamaModelParams::default();
+        let model = LlamaModel::load_from_file(&backend, model_path, &model_params)
+                    .expect("Failed to load the model");
     })
 }

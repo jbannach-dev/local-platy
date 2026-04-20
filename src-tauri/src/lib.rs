@@ -14,6 +14,9 @@
 
 mod model;
 
+use tauri::path::BaseDirectory;
+use tauri::Manager;
+
 #[tauri::command]
 fn prompt(text: String) -> String{
     return "hello world".to_string();
@@ -24,8 +27,15 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app|{
+            let model_path = app
+                .path()
+                .resolve(
+                    "models/llama-3.2-1b-instruct-q8_0.gguf",
+                    BaseDirectory::Resource,
+                )
+                .expect("Failed to find the model");
 
-            let model = model::spawn_thread();
+            let model = model::spawn_thread(model_path);
 
             Ok(())
         })
