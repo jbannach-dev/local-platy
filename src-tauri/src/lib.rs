@@ -12,11 +12,16 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+#[tauri::command]
+fn prompt(text: String) -> String{
+    return "hello world".to_string();
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![prompt])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
