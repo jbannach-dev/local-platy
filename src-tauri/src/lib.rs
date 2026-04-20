@@ -12,15 +12,59 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+mod model;
+
+use tauri::path::BaseDirectory;
+use tauri::Manager;
+
+use tokio::sync::{mpsc, oneshot};
+
+use model::{spawn_thread, ModelState, ModelTask};
+
+
+
 #[tauri::command]
-fn prompt(text: String) -> String{
-    return "hello world".to_string();
+async fn prompt(
+    text: String,
+    state: tauri::State<'_, ModelState>,
+) -> Result<String, String>{
+    
+    let (res_tx, res_rx) = oneshot::channel();
+
+    state
+        .tx
+        .send(ModelTask {
+            text,
+            response_tx: res_tx,
+        })
+        .await
+        .map_err(|_| "Worker disconnected")?;
+
+    res_rx.await.map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .setup(|app|{
+            let model_path = app
+                .path()
+                .resolve(
+                    "models/model.gguf",
+                    BaseDirectory::Resource,
+                )
+                .expect("Failed to find the model");
+
+                let context_size = 1024;
+                let system_prompt = "You are an Assistant".to_string();
+
+                let tx = model::spawn_thread(model_path, context_size, system_prompt);
+                app.manage(ModelState{tx});
+
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![prompt])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

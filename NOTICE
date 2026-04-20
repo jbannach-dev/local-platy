@@ -8,3 +8,16 @@ Copyright (c) 2021 Tauri
 This product includes software developed by
 Meta Platforms, Inc. (https://react.dev/).
 Copyright (c) Meta Platforms, Inc. and affiliates.
+
+This product includes software developed by
+The ggml authors (https://github.com/ggml-org/llama.cpp).
+Copyright (c) 2023-2026 The ggml authors.
+
+This product includes software developed by
+Dial AI / utilityai (https://github.com/utilityai/llama-cpp-rs).
+Copyright (c) Dial AI.
+
+This product includes or makes use of the Qwen3 language model,
+developed by Alibaba Cloud (https://huggingface.co/Qwen).
+Copyright (c) Alibaba Group.
+Licensed under the Apache License, Version 2.0.
