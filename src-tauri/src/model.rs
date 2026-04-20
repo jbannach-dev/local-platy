@@ -34,22 +34,23 @@ pub struct ModelState {
     pub tx: mpsc::Sender<ModelTask>,
 }
 
-pub fn spawn_thread(model_path: PathBuf) -> mpsc::Sender<ModelTask>{
+pub fn spawn_thread(
+    model_path: PathBuf,
+    context_size: u32
+) -> mpsc::Sender<ModelTask>{
     let (tx, mut rx) = mpsc::channel::<ModelTask>(10);
-
-    let model_path_clone = model_path.clone();
 
     std::thread::spawn(move ||{
 
         //Load Model    
         let backend = LlamaBackend::init().unwrap();
         let model_params = LlamaModelParams::default();
-        let model = LlamaModel::load_from_file(&backend, model_path_clone, &model_params)
+        let model = LlamaModel::load_from_file(&backend, model_path, &model_params)
             .expect("Failed to load the model");    
 
         //Create context
         let mut seq_pos_y = 0;
-        let ctx_params = LlamaContextParams::default().with_n_ctx(NonZeroU32::new(512));
+        let ctx_params = LlamaContextParams::default().with_n_ctx(NonZeroU32::new(context_size)); 
         let mut ctx = model
             .new_context(&backend, ctx_params)
             .expect("Failed to create the context");

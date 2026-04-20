@@ -21,6 +21,8 @@ use tokio::sync::{mpsc, oneshot};
 
 use model::{spawn_thread, ModelState, ModelTask};
 
+
+
 #[tauri::command]
 async fn prompt(
     text: String,
@@ -53,7 +55,10 @@ pub fn run() {
                     BaseDirectory::Resource,
                 )
                 .expect("Failed to find the model");
-                let tx = model::spawn_thread(model_path);
+
+                let context_size = 1024;
+
+                let tx = model::spawn_thread(model_path,context_size);
                 app.manage(ModelState{tx});
 
 
