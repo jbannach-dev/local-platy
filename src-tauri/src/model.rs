@@ -12,24 +12,11 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-mod model;
+use std::thread;
 
-#[tauri::command]
-fn prompt(text: String) -> String{
-    return "hello world".to_string();
-}
-
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
-        .setup(|app|{
-
-            let model = model::spawn_thread();
-
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![prompt])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+// Public wrapper that spawns the thread and returns the handle
+pub fn spawn_thread() -> thread::JoinHandle<()> {
+    thread::spawn(move || {
+        println!("model thread spawned");
+    })
 }
