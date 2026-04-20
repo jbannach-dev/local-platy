@@ -13,12 +13,73 @@
 //  limitations under the License.
 
 
+import { ReactElement, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
+  const [chatHistory, setChatHistory] = useState<ReactElement[]>([]);
+  const [prompt, setPrompt] = useState<string>("");
+  const isGenereating = useRef<boolean>(false);
+
+
+  function addMessage(message: ReactElement) {
+    setChatHistory((prev) => [...prev, message])
+  }
+
+
+  async function handlePrompt() {
+    if (!isGenereating.current) {
+      isGenereating.current = true
+
+      // Add user message to the chat history
+      addMessage(
+        <div className="chat-history-entry chat-history-entry-user">
+          <div className="chat-history-entry-wrapper chat-history-entry-wrapper-user">
+            <p>{prompt}</p>
+          </div>
+        </div>
+      );
+
+      // Call the Tauri backend prompt function to generate a response.
+      const newMessage: string = await invoke("prompt", { text: prompt });
+
+      // Add the response to the chat history
+      addMessage(
+        <div className="chat-history-entry chat-history-entry-bot">
+          <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
+            <p >{newMessage}</p>
+          </div>
+        </div>
+      );
+
+      isGenereating.current = false;
+    }
+
+  }
+
   return (
     <main className="container">
-    </main>
+      <div className="chat-history">
+        {chatHistory}
+      </div>
+
+      <form
+        className="chat-prompt"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handlePrompt();
+        }}>
+
+        <textarea
+          id="chat-prompt-input"
+          onChange={(e) => setPrompt(e.currentTarget.value)}
+          placeholder="ask me"
+        />
+
+        <button type="submit">Send</button>
+      </form>
+    </main >
   );
 }
 
