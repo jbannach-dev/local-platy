@@ -30,7 +30,7 @@ pub fn run() {
             let model_path = app
                 .path()
                 .resolve(
-                    "models/llama-3.2-1b-instruct-q8_0.gguf",
+                    "models/model.gguf",
                     BaseDirectory::Resource,
                 )
                 .expect("Failed to find the model");
