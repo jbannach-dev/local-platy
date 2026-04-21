@@ -20,7 +20,9 @@ import "./App.css";
 function App() {
   const [chatHistory, setChatHistory] = useState<ReactElement[]>([]);
   const [prompt, setPrompt] = useState<string>("");
+
   const isGenereating = useRef<boolean>(false);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
 
   function addMessage(message: ReactElement) {
@@ -32,7 +34,6 @@ function App() {
     if (!isGenereating.current) {
       isGenereating.current = true
 
-      // Add user message to the chat history
       addMessage(
         <div className="chat-history-entry chat-history-entry-user">
           <div className="chat-history-entry-wrapper chat-history-entry-wrapper-user">
@@ -41,10 +42,12 @@ function App() {
         </div>
       );
 
-      // Call the Tauri backend prompt function to generate a response.
+
+      if (textAreaRef.current)
+        textAreaRef.current.value = "";
+
       const newMessage: string = await invoke("prompt", { text: prompt });
 
-      // Add the response to the chat history
       addMessage(
         <div className="chat-history-entry chat-history-entry-bot">
           <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
@@ -54,6 +57,13 @@ function App() {
       );
 
       isGenereating.current = false;
+    }
+  }
+
+  function handleTextAreaShortcuts(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handlePrompt();
     }
 
   }
@@ -69,11 +79,14 @@ function App() {
         onSubmit={(e) => {
           e.preventDefault();
           handlePrompt();
-        }}>
+        }}
+      >
 
         <textarea
           id="chat-prompt-input"
+          ref={textAreaRef}
           onChange={(e) => setPrompt(e.currentTarget.value)}
+          onKeyDown={handleTextAreaShortcuts}
           placeholder="ask me"
         />
 
