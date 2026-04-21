@@ -1,0 +1,66 @@
+name: "Publish Release"
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+            args: --bundles appimage,deb
+          - platform: windows-latest
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: download model
+        shell: bash
+        run: |
+            curl -L "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q8_0.gguf?download=true" \
+                -o src-tauri/models/model.gguf
+
+      - name: setup deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: 2.7.12
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            build-essential \
+            clang \
+            libclang-dev \
+            cmake \
+            xdg-utils
+
+      - name: install frontend dependencies
+        run: deno install
+    
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: app-v__VERSION__
+          releaseName: "App v__VERSION__"
+          releaseBody: "See the assets to download this version and install."
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

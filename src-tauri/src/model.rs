@@ -127,8 +127,7 @@ pub fn spawn_thread(
                 seq_pos_y += 1;
                 n_cur += 1;
             }
-
-            let response = format!("{}", output);
+            
             let _ = task.response_tx.send(output);
         }
     });
