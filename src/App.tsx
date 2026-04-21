@@ -23,7 +23,9 @@ function App() {
 
   const isGenereating = useRef<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const chatHistoryRef = useRef<HTMLDivElement>(null);
 
+  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
   function addMessage(message: ReactElement) {
     setChatHistory((prev) => [...prev, message])
@@ -42,6 +44,14 @@ function App() {
         </div>
       );
 
+      await delay(100)
+      if (chatHistoryRef.current) {
+        chatHistoryRef.current.scrollTo({
+          top: chatHistoryRef.current.scrollHeight,
+          behavior: "smooth"
+        });
+      }
+
 
       if (textAreaRef.current)
         textAreaRef.current.value = "";
@@ -55,6 +65,13 @@ function App() {
           </div>
         </div>
       );
+      await delay(100)
+      if (chatHistoryRef.current) {
+        chatHistoryRef.current.scrollTo({
+          top: chatHistoryRef.current.scrollHeight,
+          behavior: "smooth"
+        });
+      }
 
       isGenereating.current = false;
     }
@@ -70,7 +87,10 @@ function App() {
 
   return (
     <main className="container">
-      <div className="chat-history">
+      <div
+        className="chat-history"
+        ref={chatHistoryRef}
+      >
         {chatHistory}
       </div>
 
