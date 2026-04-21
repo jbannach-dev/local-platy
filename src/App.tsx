@@ -37,7 +37,9 @@ function App() {
       isGenereating.current = true
 
       addMessage(
-        <div className="chat-history-entry chat-history-entry-user">
+        <div
+          key={chatHistory.length}
+          className="chat-history-entry chat-history-entry-user">
           <div className="chat-history-entry-wrapper chat-history-entry-wrapper-user">
             <p>{prompt}</p>
           </div>
@@ -59,7 +61,9 @@ function App() {
       const newMessage: string = await invoke("prompt", { text: prompt });
 
       addMessage(
-        <div className="chat-history-entry chat-history-entry-bot">
+        <div
+          key={chatHistory.length + 1}
+          className="chat-history-entry chat-history-entry-bot">
           <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
             <p >{newMessage}</p>
           </div>
