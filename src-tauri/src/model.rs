@@ -41,7 +41,7 @@ pub fn spawn_thread(
 ) -> mpsc::Sender<ModelTask> {
     let (tx, mut rx) = mpsc::channel::<ModelTask>(10);
 
-    std::thread::spawn(move || {
+    thread::spawn(move || {
         //Load Model
         let backend = LlamaBackend::init().unwrap();
         let model_params = LlamaModelParams::default();
