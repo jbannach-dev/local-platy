@@ -12,16 +12,18 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-use std::thread;
-use std::path::PathBuf;
 use std::num::NonZeroU32;
+use std::path::PathBuf;
+use std::thread;
 
-use llama_cpp_2::llama_backend::LlamaBackend;
-use llama_cpp_2::model::params::LlamaModelParams;
-use llama_cpp_2::model::{Special, AddBos, LlamaModel};
 use llama_cpp_2::context::params::LlamaContextParams;
+use llama_cpp_2::llama_backend::LlamaBackend;
 use llama_cpp_2::llama_batch::LlamaBatch;
+use llama_cpp_2::model::params::LlamaModelParams;
+use llama_cpp_2::model::{AddBos, LlamaModel};
 use llama_cpp_2::sampling::LlamaSampler;
+
+use encoding_rs::UTF_8;
 
 use tokio::sync::{mpsc, oneshot};
 
@@ -37,20 +39,20 @@ pub struct ModelState {
 pub fn spawn_thread(
     model_path: PathBuf,
     context_size: u32,
-    system_prompt: String
-) -> mpsc::Sender<ModelTask>{
+    system_prompt: String,
+) -> mpsc::Sender<ModelTask> {
     let (tx, mut rx) = mpsc::channel::<ModelTask>(10);
 
-    std::thread::spawn(move ||{
-        //Load Model    
+    thread::spawn(move || {
+        //Load Model
         let backend = LlamaBackend::init().unwrap();
         let model_params = LlamaModelParams::default();
         let model = LlamaModel::load_from_file(&backend, model_path, &model_params)
-            .expect("Failed to load the model");    
+            .expect("Failed to load the model");
 
         //Create context
         let mut seq_pos_y = 0;
-        let ctx_params = LlamaContextParams::default().with_n_ctx(NonZeroU32::new(context_size)); 
+        let ctx_params = LlamaContextParams::default().with_n_ctx(NonZeroU32::new(context_size));
         let mut ctx = model
             .new_context(&backend, ctx_params)
             .expect("Failed to create the context");
@@ -61,11 +63,12 @@ pub fn spawn_thread(
         system_prompt_finnal += &system_prompt;
         system_prompt_finnal += "<|im_end|>";
 
-        let system_tokens = model.str_to_token(system_prompt.as_str(), AddBos::Never).unwrap();
+        let system_tokens = model
+            .str_to_token(system_prompt.as_str(), AddBos::Never)
+            .unwrap();
         let mut system_prompt_batch = LlamaBatch::new(2048, 1);
 
         for (i, system_token) in system_tokens.iter().enumerate() {
-
             let _ = system_prompt_batch.add(
                 *system_token,
                 seq_pos_y as i32,
@@ -73,7 +76,7 @@ pub fn spawn_thread(
                 i == system_tokens.len() - 1,
             );
 
-            seq_pos_y+=1;
+            seq_pos_y += 1;
         }
 
         let _ = ctx.decode(&mut system_prompt_batch);
@@ -94,15 +97,9 @@ pub fn spawn_thread(
             let mut batch = LlamaBatch::new(2048, 1);
 
             for (i, token) in tokens.iter().enumerate() {
+                let _ = batch.add(*token, seq_pos_y as i32, &[0][..], i == tokens.len() - 1);
 
-                let _ = batch.add(
-                    *token,
-                    seq_pos_y as i32,
-                    &[0][..],
-                    i == tokens.len() - 1,
-                );
-
-                seq_pos_y+=1;
+                seq_pos_y += 1;
             }
 
             let _ = ctx.decode(&mut batch);
@@ -110,7 +107,8 @@ pub fn spawn_thread(
             let mut sampler = LlamaSampler::greedy();
             let mut n_cur = tokens.len() as i32;
             let n_len = 2048; // Maximum number of tokens to generate
-            let mut output = String::from("");  
+            let mut output = String::from("");
+            let mut decoder = UTF_8.new_decoder();
 
             while n_cur < n_len {
                 let _ = ctx.decode(&mut batch);
@@ -120,14 +118,17 @@ pub fn spawn_thread(
                     break;
                 }
 
-                output += &model.token_to_str(token_id, Special::Tokenize).unwrap();
+                output += &model
+                    .token_to_piece(token_id, &mut decoder, true, None)
+                    .unwrap();
+
                 batch.clear();
 
                 let _ = batch.add(token_id, seq_pos_y, &[0][..], true);
                 seq_pos_y += 1;
                 n_cur += 1;
             }
-            
+
             let _ = task.response_tx.send(output);
         }
     });
