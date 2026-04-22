@@ -23,6 +23,8 @@ use llama_cpp_2::model::params::LlamaModelParams;
 use llama_cpp_2::model::{AddBos, LlamaModel, Special};
 use llama_cpp_2::sampling::LlamaSampler;
 
+use encoding_rs::UTF_8;
+
 use tokio::sync::{mpsc, oneshot};
 
 pub struct ModelTask {
@@ -106,6 +108,7 @@ pub fn spawn_thread(
             let mut n_cur = tokens.len() as i32;
             let n_len = 2048; // Maximum number of tokens to generate
             let mut output = String::from("");
+            let mut decoder = UTF_8.new_decoder();
 
             while n_cur < n_len {
                 let _ = ctx.decode(&mut batch);
@@ -115,7 +118,10 @@ pub fn spawn_thread(
                     break;
                 }
 
-                output += &model.token_to_str(token_id, Special::Tokenize).unwrap();
+                output += &model
+                    .token_to_piece(token_id, &mut decoder, true, None)
+                    .unwrap();
+
                 batch.clear();
 
                 let _ = batch.add(token_id, seq_pos_y, &[0][..], true);
