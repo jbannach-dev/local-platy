@@ -23,6 +23,8 @@ use llama_cpp_2::model::params::LlamaModelParams;
 use llama_cpp_2::model::{AddBos, LlamaModel};
 use llama_cpp_2::sampling::LlamaSampler;
 
+use rand::Rng;
+
 use encoding_rs::UTF_8;
 
 use tokio::sync::{mpsc, oneshot};
@@ -62,12 +64,12 @@ pub fn spawn_thread(
         system_prompt_finnal += "<|im_start|>system\n";
         system_prompt_finnal += &system_prompt;
         system_prompt_finnal += "<|im_end|>";
+        system_prompt_finnal += "<|endoftext|>";
 
         let system_tokens = model
             .str_to_token(system_prompt.as_str(), AddBos::Never)
             .unwrap();
         let mut system_prompt_batch = LlamaBatch::new(2048, 1);
-
         for (i, system_token) in system_tokens.iter().enumerate() {
             let _ = system_prompt_batch.add(
                 *system_token,
@@ -89,22 +91,24 @@ pub fn spawn_thread(
             prompt += "<|im_start|>user\n";
             prompt += "/no_think "; //disable thinking mode
             prompt += &recived_text;
-            prompt += "<|im_end|>";
+            prompt += "<|im_end|>\n";
             prompt += "<|im_start|>assistant\n";
-            prompt += "<think> </think>";
+            prompt += "<think> </think>\n";
 
             let tokens = model.str_to_token(prompt.as_str(), AddBos::Never).unwrap();
             let mut batch = LlamaBatch::new(2048, 1);
-
             for (i, token) in tokens.iter().enumerate() {
                 let _ = batch.add(*token, seq_pos_y as i32, &[0][..], i == tokens.len() - 1);
-
                 seq_pos_y += 1;
             }
 
-            let _ = ctx.decode(&mut batch);
+            //Sampler
+            let mut rng = rand::thread_rng();
+            let seed: u32 = rng.gen();
 
-            let mut sampler = LlamaSampler::greedy();
+            let mut sampler =
+                LlamaSampler::chain_simple([LlamaSampler::temp(0.7), LlamaSampler::dist(seed)]);
+
             let mut n_cur = tokens.len() as i32;
             let n_len = 2048; // Maximum number of tokens to generate
             let mut output = String::from("");
@@ -118,17 +122,19 @@ pub fn spawn_thread(
                     break;
                 }
 
-                output += &model
-                    .token_to_piece(token_id, &mut decoder, true, None)
-                    .unwrap();
+                if let Ok(piece) = model.token_to_piece(token_id, &mut decoder, false, None) {
+                    output += &piece;
+                } else {
+                    eprintln!("Warning: undefined Token-Type at ID {}", token_id);
+                }
 
                 batch.clear();
 
                 let _ = batch.add(token_id, seq_pos_y, &[0][..], true);
                 seq_pos_y += 1;
+
                 n_cur += 1;
             }
-
             let _ = task.response_tx.send(output);
         }
     });
