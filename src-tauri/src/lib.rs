@@ -17,9 +17,9 @@ mod model;
 use tauri::path::BaseDirectory;
 use tauri::Manager;
 
-use tokio::sync::{mpsc, oneshot};
+use tokio::sync::oneshot;
 
-use model::{spawn_thread, ModelState, ModelTask};
+use model::{ModelState, ModelTask};
 
 #[tauri::command]
 async fn prompt(text: String, state: tauri::State<'_, ModelState>) -> Result<String, String> {
