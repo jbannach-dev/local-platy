@@ -136,7 +136,7 @@ pub fn spawn_thread(
                         delete_by += difference;
                     }
 
-                    // Check if the entire context is about to be deleted.
+                    // Set parameters for the upcoming shift
                     let tokens_to_keep = system_prompt_tokens_position as u32;
                     let tokens_to_discard = (system_prompt_tokens_position + delete_by) as u32;
                     let current_seq_position = seq_pos_y as u32;
