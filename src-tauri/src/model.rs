@@ -46,6 +46,12 @@ pub fn spawn_thread(
     let (tx, mut rx) = mpsc::channel::<ModelTask>(10);
 
     thread::spawn(move || {
+        //Current sequence id
+        let seq_id = 0;
+
+        // Maximum number of tokens to generate in a single sequence.
+        let max_seq: i32 = 2024;
+
         //Load Model
         let backend = LlamaBackend::init().unwrap();
         let model_params = LlamaModelParams::default();
@@ -81,6 +87,8 @@ pub fn spawn_thread(
             seq_pos_y += 1;
         }
 
+        let system_prompt_tokens_position = seq_pos_y - 1;
+
         let _ = ctx.decode(&mut system_prompt_batch);
 
         while let Some(task) = rx.blocking_recv() {
@@ -96,11 +104,12 @@ pub fn spawn_thread(
             prompt += "<think> </think>\n";
 
             let tokens = model.str_to_token(prompt.as_str(), AddBos::Never).unwrap();
-            let mut batch = LlamaBatch::new(2048, 1);
+            let mut batch = LlamaBatch::new(max_seq as usize, 1);
             for (i, token) in tokens.iter().enumerate() {
                 let _ = batch.add(*token, seq_pos_y as i32, &[0][..], i == tokens.len() - 1);
                 seq_pos_y += 1;
             }
+            let _ = ctx.decode(&mut batch);
 
             //Sampler
             let mut rng = rand::thread_rng();
@@ -110,12 +119,54 @@ pub fn spawn_thread(
                 LlamaSampler::chain_simple([LlamaSampler::temp(0.7), LlamaSampler::dist(seed)]);
 
             let mut n_cur = tokens.len() as i32;
-            let n_len = 2048; // Maximum number of tokens to generate
             let mut output = String::from("");
             let mut decoder = UTF_8.new_decoder();
 
-            while n_cur < n_len {
-                let _ = ctx.decode(&mut batch);
+            while n_cur < max_seq {
+                //Sliding window implementation
+                let current_seq_pos = (seq_pos_y) as u32;
+
+                if context_size < current_seq_pos {
+                    // Set the deletion size to 25% of the maximum context capacity.
+                    let mut delete_by = (context_size as f32 * 0.25).round() as i32;
+                    let difference = (current_seq_pos - context_size) as i32;
+
+                    // Include the overflowed context in the deletion range if there is any.
+                    if difference > 0 {
+                        delete_by += difference;
+                    }
+
+                    // Check if the entire context is about to be deleted.
+                    let tokens_to_keep = system_prompt_tokens_position as u32;
+                    let tokens_to_discard = (system_prompt_tokens_position + delete_by) as u32;
+                    let current_seq_position = seq_pos_y as u32;
+                    let shift_by = delete_by as i32;
+                    let new_seq_position = (seq_pos_y - delete_by) as u32;
+
+                    // Clear the KV cache while preserving the system prompt.
+                    ctx.clear_kv_cache_seq(
+                        Some(seq_id),
+                        Some(tokens_to_keep),
+                        Some(tokens_to_discard),
+                    )
+                    .unwrap();
+
+                    // Shift the remaining KV cache forward to close the gap after the system prompt.
+                    ctx.kv_cache_seq_add(
+                        seq_id as i32,
+                        Some(tokens_to_discard),
+                        Some(current_seq_position),
+                        -shift_by,
+                    )
+                    .unwrap();
+
+                    // Clear the end of the KV cache to remove duplicate context
+                    ctx.clear_kv_cache_seq(Some(seq_id), Some(new_seq_position), None)
+                        .unwrap();
+
+                    seq_pos_y = (new_seq_position) as i32;
+                }
+
                 let token_id = sampler.sample(&ctx, batch.n_tokens() - 1);
 
                 if token_id == model.token_eos() {
@@ -131,8 +182,8 @@ pub fn spawn_thread(
                 batch.clear();
 
                 let _ = batch.add(token_id, seq_pos_y, &[0][..], true);
+                let _ = ctx.decode(&mut batch);
                 seq_pos_y += 1;
-
                 n_cur += 1;
             }
             let _ = task.response_tx.send(output);
