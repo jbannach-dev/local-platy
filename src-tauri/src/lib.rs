@@ -47,7 +47,7 @@ pub fn run() {
                 .resolve("models/model.gguf", BaseDirectory::Resource)
                 .expect("Failed to find the model");
 
-            let context_size = 1024;
+            let context_size = 8192;
             let system_prompt = "You are an Assistant".to_string();
 
             let tx = model::spawn_thread(model_path, context_size, system_prompt);
