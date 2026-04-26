@@ -58,17 +58,46 @@ function App() {
       if (textAreaRef.current)
         textAreaRef.current.value = "";
 
-      const newMessage: string = await invoke("prompt", { text: prompt });
+      const modelResponse: string = await invoke("prompt", { text: prompt });
+      const isReasoningResponse: boolean = modelResponse.includes("</think>");
 
-      addMessage(
-        <div
-          key={chatHistory.length + 1}
-          className="chat-history-entry chat-history-entry-bot">
-          <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
-            <p >{newMessage}</p>
+
+      if (isReasoningResponse) {
+        const modelResponseSplit = modelResponse.split("<\/think>").filter(Boolean);
+
+        addMessage(
+          <div
+            key={chatHistory.length + 1}
+            className="chat-history-entry chat-history-entry-bot">
+            <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
+
+              <details className="chat-history-entry-wrapper-bot-reasoning">
+                <summary>Thought Process</summary>
+                <p>{modelResponseSplit[0]}</p>
+              </details>
+
+              <div className="chat-history-entry-wrapper-bot-reasponse">
+                <p>{modelResponseSplit[1]}</p>
+              </div>
+            </div>
           </div>
-        </div>
-      );
+        );
+      }
+
+      else {
+        addMessage(
+          <div
+            key={chatHistory.length + 1}
+            className="chat-history-entry chat-history-entry-bot">
+            <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
+              <div className="chat-history-entry-wrapper-bot-reasponse">
+                <p>{modelResponse}</p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       await delay(100)
       if (chatHistoryRef.current) {
         chatHistoryRef.current.scrollTo({

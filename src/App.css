@@ -18,8 +18,14 @@ body {
     margin: 0px;
 }
 
-p {
+p,
+textarea,
+details {
     color: white;
+}
+
+details {
+    padding: 16px 0px 0px 0px;
 }
 
 main {

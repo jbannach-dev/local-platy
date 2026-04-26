@@ -69,8 +69,7 @@ pub fn spawn_thread(
         let mut system_prompt_finnal = String::from("");
         system_prompt_finnal += "<|im_start|>system\n";
         system_prompt_finnal += &system_prompt;
-        system_prompt_finnal += "<|im_end|>";
-        system_prompt_finnal += "<|endoftext|>";
+        system_prompt_finnal += "<|im_end|>\n";
 
         let system_tokens = model
             .str_to_token(system_prompt.as_str(), AddBos::Never)
@@ -97,11 +96,10 @@ pub fn spawn_thread(
             //Handle prompt logic
             let mut prompt = String::from("");
             prompt += "<|im_start|>user\n";
-            prompt += "/no_think "; //disable thinking mode
             prompt += &recived_text;
             prompt += "<|im_end|>\n";
             prompt += "<|im_start|>assistant\n";
-            prompt += "<think> </think>\n";
+            prompt += "<think>";
 
             let tokens = model.str_to_token(prompt.as_str(), AddBos::Never).unwrap();
             let mut batch = LlamaBatch::new(max_seq as usize, 1);
@@ -115,8 +113,12 @@ pub fn spawn_thread(
             let mut rng = rand::thread_rng();
             let seed: u32 = rng.gen();
 
-            let mut sampler =
-                LlamaSampler::chain_simple([LlamaSampler::temp(0.7), LlamaSampler::dist(seed)]);
+            let mut sampler = LlamaSampler::chain_simple([
+                LlamaSampler::penalties(64, 1.1, 0.0, 2.0),
+                LlamaSampler::temp(0.5),
+                LlamaSampler::min_p(0.05, 1),
+                LlamaSampler::dist(seed),
+            ]);
 
             let mut n_cur = tokens.len() as i32;
             let mut output = String::from("");
