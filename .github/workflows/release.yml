@@ -58,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: local-platy-v__VERSION__-qwen3-1.7b
+          tagName: v__VERSION__-qwen3-1.7b
           releaseName: "Local Platy v__VERSION__ Qwen3-1.7B"
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
