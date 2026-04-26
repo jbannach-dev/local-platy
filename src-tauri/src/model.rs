@@ -115,8 +115,12 @@ pub fn spawn_thread(
             let mut rng = rand::thread_rng();
             let seed: u32 = rng.gen();
 
-            let mut sampler =
-                LlamaSampler::chain_simple([LlamaSampler::temp(0.7), LlamaSampler::dist(seed)]);
+            let mut sampler = LlamaSampler::chain_simple([
+                LlamaSampler::penalties(64, 1.1, 0.0, 2.0),
+                LlamaSampler::temp(0.5),
+                LlamaSampler::min_p(0.05, 1),
+                LlamaSampler::dist(seed),
+            ]);
 
             let mut n_cur = tokens.len() as i32;
             let mut output = String::from("");
