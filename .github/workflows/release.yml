@@ -24,7 +24,7 @@ jobs:
       - name: download model
         shell: bash
         run: |
-            curl -L "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q8_0.gguf?download=true" \
+            curl -L "https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/main/Qwen3-1.7B-Q8_0.gguf?download=true" \
                 -o src-tauri/models/model.gguf
 
       - name: setup deno
@@ -58,8 +58,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v__VERSION__
-          releaseName: "App v__VERSION__"
+          tagName: local-platy-v__VERSION__-qwen3-1.7b
+          releaseName: "Local Platy v__VERSION__ Qwen3-1.7B"
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
