@@ -14,14 +14,9 @@ limitations under the License. */
 
 body {
     background-color: black;
+    color: white;
     padding: 0px;
     margin: 0px;
-}
-
-p,
-textarea,
-details {
-    color: white;
 }
 
 details {
@@ -51,25 +46,25 @@ main {
     border-radius: 5px;
 }
 
-.chat-history::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
     background-color: transparent;
 }
 
-.chat-history::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
     background: #555;
     border-radius: 10px;
 }
 
-.chat-history::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
     background: #666;
 }
 
-.chat-history::-webkit-scrollbar {
+::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
-.chat-history::-webkit-scrollbar-corner {
+::-webkit-scrollbar-corner {
     background: transparent;
 }
 
