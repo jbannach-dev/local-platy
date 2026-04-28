@@ -35,7 +35,7 @@ function App() {
 
 
   const CustomMarkdownComponents: Components = {
-    code({ node, className, children, ...props }) {
+    code({ className, children }) {
       const matchLanguge = /language-(\w+)/.exec(className || "");
       const isCodeBlock = Boolean(matchLanguge);
 
