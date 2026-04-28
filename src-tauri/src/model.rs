@@ -16,6 +16,9 @@ use std::num::NonZeroU32;
 use std::path::PathBuf;
 use std::thread;
 
+use tauri::Manager;
+use tauri_plugin_fs::FsExt;
+
 use llama_cpp_2::context::params::LlamaContextParams;
 use llama_cpp_2::llama_backend::LlamaBackend;
 use llama_cpp_2::llama_batch::LlamaBatch;
@@ -39,6 +42,7 @@ pub struct ModelState {
 }
 
 pub fn spawn_thread(
+    app_handle: tauri::AppHandle,
     model_path: PathBuf,
     context_size: u32,
     system_prompt: String,
@@ -46,6 +50,28 @@ pub fn spawn_thread(
     let (tx, mut rx) = mpsc::channel::<ModelTask>(10);
 
     thread::spawn(move || {
+        let finnal_path;
+
+        //On Android, copy the model to internal storage to ensure the application has access to it.
+        if cfg!(target_os = "android") {
+            let app_data_model_path = app_handle.path().app_data_dir().unwrap().join("model.gguf");
+            if !app_data_model_path.exists() {
+                let _ = std::fs::create_dir_all(app_data_model_path.parent().unwrap());
+                match app_handle.fs().read(&model_path) {
+                    Ok(bytes) => {
+                        if let Err(e) = std::fs::write(&app_data_model_path, bytes) {
+                            eprintln!("Error: {}", e);
+                        }
+                    }
+                    Err(e) => eprintln!("Error during reading: {}", e),
+                }
+            }
+
+            finnal_path = app_data_model_path;
+        } else {
+            finnal_path = model_path;
+        }
+
         //Current sequence id
         let seq_id = 0;
 
@@ -55,7 +81,7 @@ pub fn spawn_thread(
         //Load Model
         let backend = LlamaBackend::init().unwrap();
         let model_params = LlamaModelParams::default();
-        let model = LlamaModel::load_from_file(&backend, model_path, &model_params)
+        let model = LlamaModel::load_from_file(&backend, finnal_path, &model_params)
             .expect("Failed to load the model");
 
         //Create context

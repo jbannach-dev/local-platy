@@ -41,6 +41,7 @@ async fn prompt(text: String, state: tauri::State<'_, ModelState>) -> Result<Str
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             let model_path = app
                 .path()
@@ -50,7 +51,12 @@ pub fn run() {
             let context_size = 8192;
             let system_prompt = "You are a helpful assistant.".to_string();
 
-            let tx = model::spawn_thread(model_path, context_size, system_prompt);
+            let tx = model::spawn_thread(
+                app.handle().clone(),
+                model_path,
+                context_size,
+                system_prompt,
+            );
             app.manage(ModelState { tx });
 
             Ok(())
