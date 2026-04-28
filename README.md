@@ -10,13 +10,20 @@ A desktop application built with Tauri and React for running Large Language Mode
 ## Installation 
 For the quickest setup with Qwen3 1.7b, download the pre-compiled executable for your platform from the latest GitHub release.
 
-## How to build from source:
+## How to build from source with Deno:
 1. Install Dependencies: Run `deno install` to fetch all necessary packages.
 2. Prepare Model: Copy your GGUF model to `./src-tauri/models/` and rename it to `model.gguf`.
 3. Development: Run the development task via `deno task tauri dev`.
-4. Build: Create the executable for your OS using `deno task tauri build`.
+4. Build: Create the executable abb or apk using `deno task tauri build`.
 
-the path is currently hardcoded
 
-### Note 
+## (Experimental) How to build from source with Deno for Android devices
+This has been tested with Android emulators. You’ll need the Android NDK 26.1.10909125 to run the build process.
+
+1. Install Dependencies: Run `deno install` to fetch all necessary packages.
+2. Prepare Model: Copy your GGUF model to `./src-tauri/models/` and rename it to `model.gguf`.
+3. Development: Run the development task via `deno task tauri android dev` to run on android emulators using Android studio.
+4. Build: Create the AAB and APK executables using `deno task tauri android build --target aarch64` for AArch64 devices or `deno task tauri android build --target armv7` for ARMv7 devices.
+
+## Note 
 This application is currently developed and tested on Linux using the Qwen3-1.7B model. Support for other platforms and models is ongoing.
