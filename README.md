@@ -1,6 +1,8 @@
 # Loacal Platy
 A desktop application built with Tauri and React for running Large Language Models locally. It uses llama-cpp-2 to load and interact with GGUF models directly on your machine. The goal is to provide a simple, one-click solution that works without complex setup.
 
+![Screenshot of the chat user interface showing a conversation history](docs/screenshot-chat-ui.png)
+
 ## Features
 * Local Desktop Application: Built with Tauri to run entirely offline.
 * UI: Built entirely on React with TypeScript.
