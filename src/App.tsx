@@ -13,9 +13,17 @@
 //  limitations under the License.
 
 
-import { ReactElement, useRef, useState } from "react";
+import React, { ReactElement, useRef, useState } from "react";
+
+import ReactMarkdown from "react-markdown";
+import { Prism } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
+
+import type { Components } from 'react-markdown';
 
 function App() {
   const [chatHistory, setChatHistory] = useState<ReactElement[]>([]);
@@ -24,6 +32,30 @@ function App() {
   const isGenereating = useRef<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const chatHistoryRef = useRef<HTMLDivElement>(null);
+
+
+  const CustomMarkdownComponents: Components = {
+    code({ node, className, children, ...props }) {
+      const matchLanguge = /language-(\w+)/.exec(className || "");
+      const isCodeBlock = Boolean(matchLanguge);
+
+      return isCodeBlock ? (
+        <Prism
+          style={oneDark}
+          language={matchLanguge![1]}
+          PreTag="div"
+        >
+          {String(children).replace(/\n$/, '')}
+        </Prism>
+      ) :
+
+
+        (<code className={className}>
+          {children}
+        </code>);
+    }
+  }
+
 
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -77,7 +109,9 @@ function App() {
               </details>
 
               <div className="chat-history-entry-wrapper-bot-reasponse">
-                <p>{modelResponseSplit[1]}</p>
+                <ReactMarkdown
+                  components={CustomMarkdownComponents}
+                >{modelResponseSplit[1]}</ReactMarkdown>
               </div>
             </div>
           </div>
@@ -91,7 +125,9 @@ function App() {
             className="chat-history-entry chat-history-entry-bot">
             <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
               <div className="chat-history-entry-wrapper-bot-reasponse">
-                <p>{modelResponse}</p>
+                <ReactMarkdown
+                  components={CustomMarkdownComponents}
+                >{modelResponse}</ReactMarkdown>
               </div>
             </div>
           </div>
