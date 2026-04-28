@@ -17,7 +17,7 @@ For the quickest setup with Qwen3 1.7b, download the pre-compiled executable for
 4. Build: Create the executable abb or apk using `deno task tauri build`.
 
 
-## (Experimental) How to build from source with Deno for Android devices
+## (Experimental) How to build for Android devices:
 This has been tested with Android emulators. You’ll need the Android NDK 26.1.10909125 to run the build process.
 
 1. Install Dependencies: Run `deno install` to fetch all necessary packages.
