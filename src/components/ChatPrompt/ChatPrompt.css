@@ -1,0 +1,46 @@
+form {
+    position: relative;
+    background-color: #333;
+    margin: 0 0 10px 0;
+    padding: 20px;
+    border: 3px #444 solid;
+    border-radius: 10px;
+}
+
+
+textarea {
+    font-size: 18px;
+    background-color: transparent;
+    color: white;
+    resize: none;
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 0px;
+}
+
+textarea:hover {
+    border: none;
+    outline: none;
+    border-color: transparent;
+}
+
+button {
+    position: absolute;
+    background-color: #222;
+    color: white;
+    border-width: 0;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 18px;
+    right: 5px;
+    bottom: 5px;
+}
+
+button:focus {
+    outline: auto;
+}
+
+button:hover {
+    outline: auto;
+}

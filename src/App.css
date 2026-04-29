@@ -19,10 +19,6 @@ body {
     margin: 0px;
 }
 
-details {
-    padding: 16px 0px 0px 0px;
-}
-
 main {
     display: grid;
     height: 100vh;
@@ -31,19 +27,6 @@ main {
     margin: auto;
     grid-template-rows: 5fr 1fr;
     padding: 0 10px;
-}
-
-
-.chat-history {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 10px 0 0 0;
-    padding: 20px 0;
-    background-color: #222;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    border-radius: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -66,121 +49,4 @@ main {
 
 ::-webkit-scrollbar-corner {
     background: transparent;
-}
-
-form {
-    position: relative;
-    background-color: #333;
-    margin: 0 0 10px 0;
-    padding: 20px;
-    border: 3px #444 solid;
-    border-radius: 10px;
-}
-
-
-textarea {
-    font-size: 18px;
-    background-color: transparent;
-    color: white;
-    resize: none;
-    width: 100%;
-    border: none;
-    outline: none;
-    padding: 0px;
-}
-
-textarea:hover {
-    border: none;
-    outline: none;
-    border-color: transparent;
-}
-
-button {
-    position: absolute;
-    background-color: #222;
-    color: white;
-    border-width: 0;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 18px;
-    right: 5px;
-    bottom: 5px;
-}
-
-button:focus {
-    outline: auto;
-}
-
-button:hover {
-    outline: auto;
-}
-
-.chat-history-entry {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    animation: fadein-user 2s ease-in;
-}
-
-.chat-history-entry-user {
-    align-items: start;
-    justify-items: start;
-}
-
-.chat-history-entry-bot {
-    align-items: end;
-    justify-items: end;
-}
-
-.chat-history-entry-wrapper {
-    background-color: #333;
-    padding: 0px 10px;
-    border-radius: 10px;
-    max-width: 80%;
-}
-
-.chat-history-entry-wrapper-user {
-    margin: 0 0 0 15px;
-}
-
-.chat-history-entry-wrapper-bot {
-    margin: 0 15px 0 0;
-}
-
-.message-bot {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    align-items: end;
-    justify-items: end;
-    animation: fadein-bot 2s ease-in;
-}
-
-.message-user {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    align-items: start;
-    justify-items: start;
-    animation: fadein-user 2s ease-in;
-}
-
-@keyframes fadein-user {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes fadein-bot {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
 }

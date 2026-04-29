@@ -1,0 +1,67 @@
+details {
+    padding: 16px 0px 0px 0px;
+}
+
+.chat-history {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 10px 0 0 0;
+    padding: 20px 0;
+    background-color: #222;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border-radius: 5px;
+}
+
+.chat-history-entry {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    animation: fadein-user 2s ease-in;
+}
+
+.chat-history-entry-user {
+    align-items: start;
+    justify-items: start;
+}
+
+.chat-history-entry-bot {
+    align-items: end;
+    justify-items: end;
+}
+
+.chat-history-entry-wrapper {
+    background-color: #333;
+    padding: 0px 10px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.chat-history-entry-wrapper-user {
+    margin: 0 0 0 15px;
+}
+
+.chat-history-entry-wrapper-bot {
+    margin: 0 15px 0 0;
+}
+
+@keyframes fadein-user {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadein-bot {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
