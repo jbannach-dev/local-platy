@@ -13,17 +13,17 @@
 //  limitations under the License.
 
 
-import React, { ReactElement, useRef, useState } from "react";
+import { ReactElement, useRef, useState } from "react";
 
 import ReactMarkdown from "react-markdown";
 import { Prism } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-
+import type { Components } from 'react-markdown';
 
 import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
 
-import type { Components } from 'react-markdown';
+import "./App.css";
+import ChatPrompt from "./components/ChatPrompt/ChatPrompt";
 
 function App() {
   const [chatHistory, setChatHistory] = useState<ReactElement[]>([]);
@@ -146,14 +146,6 @@ function App() {
     }
   }
 
-  function handleTextAreaShortcuts(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handlePrompt();
-    }
-
-  }
-
   return (
     <main className="container">
       <div
@@ -163,24 +155,7 @@ function App() {
         {chatHistory}
       </div>
 
-      <form
-        className="chat-prompt"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handlePrompt();
-        }}
-      >
-
-        <textarea
-          id="chat-prompt-input"
-          ref={textAreaRef}
-          onChange={(e) => setPrompt(e.currentTarget.value)}
-          onKeyDown={handleTextAreaShortcuts}
-          placeholder="ask me"
-        />
-
-        <button type="submit">Send</button>
-      </form>
+      <ChatPrompt textAreaRef={textAreaRef} handlePrompt={handlePrompt} setPrompt={setPrompt} />
     </main >
   );
 }
