@@ -19,7 +19,7 @@ use tauri::Manager;
 
 use tokio::sync::oneshot;
 
-use model::{ModelState, ModelTask};
+use model::{ModelCommands, ModelState};
 
 #[tauri::command]
 async fn prompt(text: String, state: tauri::State<'_, ModelState>) -> Result<String, String> {
@@ -27,8 +27,8 @@ async fn prompt(text: String, state: tauri::State<'_, ModelState>) -> Result<Str
 
     state
         .tx
-        .send(ModelTask {
-            text,
+        .send(ModelCommands::Prompt {
+            text: text,
             response_tx: res_tx,
         })
         .await
