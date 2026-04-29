@@ -14,16 +14,11 @@
 
 
 import { ReactElement, useRef, useState } from "react";
-
-import ReactMarkdown from "react-markdown";
-import { Prism } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import type { Components } from 'react-markdown';
-
 import { invoke } from "@tauri-apps/api/core";
-
 import "./App.css";
 import ChatPrompt from "./components/ChatPrompt/ChatPrompt";
+import ChatHistory from "./components/ChatHistory/ChatHistory";
+import ChatHistoryItem from "./components/ChatHistory/ChatHistoryItem";
 
 function App() {
   const [chatHistory, setChatHistory] = useState<ReactElement[]>([]);
@@ -32,29 +27,6 @@ function App() {
   const isGenereating = useRef<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const chatHistoryRef = useRef<HTMLDivElement>(null);
-
-
-  const CustomMarkdownComponents: Components = {
-    code({ className, children }) {
-      const matchLanguge = /language-(\w+)/.exec(className || "");
-      const isCodeBlock = Boolean(matchLanguge);
-
-      return isCodeBlock ? (
-        <Prism
-          style={oneDark}
-          language={matchLanguge![1]}
-          PreTag="div"
-        >
-          {String(children).replace(/\n$/, '')}
-        </Prism>
-      ) :
-
-
-        (<code className={className}>
-          {children}
-        </code>);
-    }
-  }
 
 
   const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -69,13 +41,7 @@ function App() {
       isGenereating.current = true
 
       addMessage(
-        <div
-          key={chatHistory.length}
-          className="chat-history-entry chat-history-entry-user">
-          <div className="chat-history-entry-wrapper chat-history-entry-wrapper-user">
-            <p>{prompt}</p>
-          </div>
-        </div>
+        <ChatHistoryItem key={chatHistory.length} text={prompt} participant="user" />
       );
 
       await delay(100)
@@ -93,44 +59,13 @@ function App() {
       const modelResponse: string = await invoke("prompt", { text: prompt });
       const isReasoningResponse: boolean = modelResponse.includes("</think>");
 
-
       if (isReasoningResponse) {
-        const modelResponseSplit = modelResponse.split("<\/think>").filter(Boolean);
-
         addMessage(
-          <div
-            key={chatHistory.length + 1}
-            className="chat-history-entry chat-history-entry-bot">
-            <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
-
-              <details className="chat-history-entry-wrapper-bot-reasoning">
-                <summary>Thought Process</summary>
-                <p>{modelResponseSplit[0]}</p>
-              </details>
-
-              <div className="chat-history-entry-wrapper-bot-reasponse">
-                <ReactMarkdown
-                  components={CustomMarkdownComponents}
-                >{modelResponseSplit[1]}</ReactMarkdown>
-              </div>
-            </div>
-          </div>
+          <ChatHistoryItem key={chatHistory.length + 1} text={modelResponse} participant="bot" thinking={true} />
         );
-      }
-
-      else {
+      } else {
         addMessage(
-          <div
-            key={chatHistory.length + 1}
-            className="chat-history-entry chat-history-entry-bot">
-            <div className="chat-history-entry-wrapper chat-history-entry-wrapper-bot">
-              <div className="chat-history-entry-wrapper-bot-reasponse">
-                <ReactMarkdown
-                  components={CustomMarkdownComponents}
-                >{modelResponse}</ReactMarkdown>
-              </div>
-            </div>
-          </div>
+          <ChatHistoryItem key={chatHistory.length + 1} text={modelResponse} participant="bot" thinking={true} />
         );
       }
 
@@ -148,13 +83,7 @@ function App() {
 
   return (
     <main className="container">
-      <div
-        className="chat-history"
-        ref={chatHistoryRef}
-      >
-        {chatHistory}
-      </div>
-
+      <ChatHistory chatHistory={chatHistory} chatHistoryRef={chatHistoryRef} />
       <ChatPrompt textAreaRef={textAreaRef} handlePrompt={handlePrompt} setPrompt={setPrompt} />
     </main >
   );
